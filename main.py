@@ -11,7 +11,7 @@ class BodyPart():
     def __init__(self, x=0, y=0):
         self.surface = pygame.Surface((100, 200), pygame.SRCALPHA)
         self.surface_rect = self.surface.get_rect(topleft = (x, y))
-        pygame.draw.ellipse(self.surface, pygame.Color('red'), (0, 0, *self.surface_rect.size), 3)
+        self.draw_texture_on_surface()
         self.angle = 0
         self.update_draw_surface()
 
@@ -35,8 +35,18 @@ class BodyPart():
         self.surface_rect.move_ip(vector)
         self.update_draw_surface()
 
+
+class Torso(BodyPart):
+    def draw_texture_on_surface(self):
+        pygame.draw.ellipse(self.surface, pygame.Color('green'), (0, 0, *self.surface_rect.size), 3)
+        pygame.draw.circle(self.surface, pygame.Color('green'), (self.surface_rect.size[0] / 2, self.surface_rect.size[1] / 2), 40, 3)
+
+
+class Foot(BodyPart):
+    def draw_texture_on_surface(self):
+        pygame.draw.ellipse(self.surface, pygame.Color('red'), (0, 0, *self.surface_rect.size), 3)
     
-parts = [BodyPart(), BodyPart(100)]
+parts = [Foot(), Foot(100), Torso(200)]
 active_part = None
 last_active = None
 prev_position = None
