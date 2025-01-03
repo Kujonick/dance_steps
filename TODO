@@ -1,0 +1,9 @@
+Buglog:
+  # - click onto nothing
+  # - rotating into other masks
+
+Features:
+  - clipping torsess
+  - sequence of steps + visuals
+  - list of steps to navigate through ticks and move them
+  - combining steps into figures

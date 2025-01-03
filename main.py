@@ -2,14 +2,13 @@ import pygame
 import sys
 import numpy as np
 
-from bodyparts import Foot, Torso
-from menus import StepEditMenu
+from menus import StepEditWindow
 pygame.init()
 screen = pygame.display.set_mode((1000, 800))
 clock = pygame.time.Clock()
 
 
-menu = StepEditMenu()
+menu = StepEditWindow()
 
 while True:
     events = [event for event in pygame.event.get()]
