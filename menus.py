@@ -86,7 +86,7 @@ class Tick():
 
                     self.last_active.change_angle(self.prev_angle + angle)
 
-                    if not self.check_for_collision(self.last_active):
+                    if isinstance(self.last_active, Foot) and not self.check_for_collision(self.last_active):
                         self.last_active.update_allowed_angle()
 
 
