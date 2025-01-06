@@ -36,8 +36,7 @@ class Tick():
         return False
     
     def history_steps(self, behind: int):
-        new_alpha = 255 // (behind + 1) ** 2
-        print(new_alpha)
+        new_alpha = 255 // (behind + 1) ** 2 if behind >= 0 else 0
         for part in self.parts:
             part.update_surface_alpha(new_alpha)
 
@@ -107,17 +106,29 @@ class StepEditWindow():
         self.pointer = pygame.mask.from_surface(pointer)
 
 
-        self.ticks = [Tick(self.pointer),
-                      Tick(self.pointer)]
+        self.ticks = [  Tick(self.pointer),
+                        Tick(self.pointer),
+                        Tick(self.pointer)]
         self.active_tick = len(self.ticks) - 1
 
         self.update_history()
 
     def update_history(self):
-        for i in range(self.active_tick + 1):
+        for i in range(min(self.active_tick + 2, len(self.ticks))):
             self.ticks[i].history_steps(self.active_tick - i)  
 
     def update(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.active_tick = min(len(self.ticks) - 1, self.active_tick + 1)
+
+                if event.key == pygame.K_DOWN:
+                    self.active_tick = max(0, self.active_tick - 1)
+
+
+            self.update_history()
+
         self.ticks[self.active_tick].update(events)
 
     def draw(self, screen):
