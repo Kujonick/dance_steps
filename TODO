@@ -1,9 +1,7 @@
 Buglog:
-  # - click onto nothing
-  # - rotating into other masks
 
 Features:
-  - clipping torsess
-  - sequence of steps + visuals
+  # - clipping torsess
+  - sequence of steps + visuals - to create alpha first we need to create with each rotation new rotated surf with combined alpha channel
   - list of steps to navigate through ticks and move them
   - combining steps into figures

@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 
 from bodyparts import Foot, Torso, BodyPart
+
 class Tick():
     def __init__(self, pointer, both_partners=True):
 
@@ -20,18 +21,25 @@ class Tick():
                                Foot(100, 200, male=False, left=False)])
             
         self.parts.append(Torso())
-        self.foots = list(filter(lambda x: isinstance(x, Foot), self.parts))
+        self.parts.append(Torso(200))
+        # self.foots = list(filter(lambda x: isinstance(x, Foot), self.parts))
 
         self.pointer = pointer
 
     def check_for_collision(self, part):
-        for foot in self.foots:
+        for foot in self.parts:
             if foot == part:
                 continue
             
             if part.collides(foot):
                 return True
         return False
+    
+    def history_steps(self, behind: int):
+        new_alpha = 255 // (behind + 1) ** 2
+        print(new_alpha)
+        for part in self.parts:
+            part.update_surface_alpha(new_alpha)
 
     def update(self, events):
         for event in events:
@@ -51,20 +59,18 @@ class Tick():
                     self.prev_angle = self.last_active.angle
 
             if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
+                if event.button == 1 and self.active_part != None:
                     
-                    if isinstance(self.active_part, Foot):
-                        allowed_pos = self.active_part.last_allowed_position
-                        rect = self.active_part.rotated_rect
-                        vector = (allowed_pos[0] - rect.x, allowed_pos[1] - rect.y)
-                        self.active_part.move(vector)
+                    allowed_pos = self.active_part.last_allowed_position
+                    rect = self.active_part.rotated_rect
+                    vector = (allowed_pos[0] - rect.x, allowed_pos[1] - rect.y)
+                    self.active_part.move(vector)
                     
                     self.active_part = None
                 
-                if event.button == 3:
-                    if isinstance(self.last_active, Foot):
-                        self.last_active.angle = self.last_active.last_allowed_angle
-                        self.last_active.update_draw_surface()
+                if event.button == 3 and self.last_active != None:
+                    self.last_active.angle = self.last_active.last_allowed_angle
+                    self.last_active.update_draw_surface()
                     
                     self.prev_position = None
             
@@ -72,10 +78,8 @@ class Tick():
                 if self.active_part != None:
                     self.active_part.move(event.rel)
 
-                    if isinstance(self.active_part, Foot):
-
-                        if not self.check_for_collision(self.active_part):
-                            self.active_part.update_allowed_position()
+                    if not self.check_for_collision(self.active_part):
+                        self.active_part.update_allowed_position()
 
                 if self.last_active != None and isinstance(self.prev_position, np.ndarray):
                     new_pos = np.array(event.pos) - np.array(self.last_active.surface_rect.center)            
@@ -86,7 +90,7 @@ class Tick():
 
                     self.last_active.change_angle(self.prev_angle + angle)
 
-                    if isinstance(self.last_active, Foot) and not self.check_for_collision(self.last_active):
+                    if not self.check_for_collision(self.last_active):
                         self.last_active.update_allowed_angle()
 
 
@@ -103,10 +107,15 @@ class StepEditWindow():
         self.pointer = pygame.mask.from_surface(pointer)
 
 
-        self.ticks = [Tick(self.pointer)]
-        self.active_tick = 0
+        self.ticks = [Tick(self.pointer),
+                      Tick(self.pointer)]
+        self.active_tick = len(self.ticks) - 1
 
-        
+        self.update_history()
+
+    def update_history(self):
+        for i in range(self.active_tick + 1):
+            self.ticks[i].history_steps(self.active_tick - i)  
 
     def update(self, events):
         self.ticks[self.active_tick].update(events)
