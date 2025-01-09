@@ -1,12 +1,12 @@
 import pygame
 
 class BodyPart():
-    def __init__(self, surface, box, x=0, y=0, alpha=255):
+    def __init__(self, surface, box, x=0, y=0, alpha=255, angle=0):
         self.oryginal_surface = surface
 
         self.box = box
         self.alpha = alpha
-        self.angle = 0
+        self.angle = angle
 
         self.surface = surface
         self.surface_rect = self.surface.get_rect(topleft = (x, y))
@@ -52,6 +52,7 @@ class BodyPart():
                           (position[0] - self.rotated_rect.x,
                            position[1] - self.rotated_rect.y)
         )
+    
 
     # -- drawing
     def update_surface_alpha(self, alpha):
@@ -76,22 +77,26 @@ class BodyPart():
 
 class Torso(BodyPart):
 
-    def __init__(self, x=0, y=0):
+    def __init__(self, x=0, y=0, alpha=255, angle=0):
         surface = pygame.Surface((200, 400), pygame.SRCALPHA)
         box = pygame.Surface((200, 400), pygame.SRCALPHA)
         pygame.draw.ellipse(box, pygame.Color('white'), (0, 0, *box.get_rect().size))
-        super().__init__(surface, box, x, y)
+        super().__init__(surface, box, x, y, alpha, angle)
 
         pygame.draw.ellipse(self.surface, pygame.Color('green'), (0, 0, *self.surface_rect.size), 3)
         pygame.draw.circle(self.surface, pygame.Color('green'), (self.surface_rect.size[0] / 2, self.surface_rect.size[1] / 2), 80, 3)
         
         
         self.update_draw_surface()
-        
+    
+    def copy(self):
+        return Torso(self.surface_rect.x, self.surface_rect.y, self.alpha, self.angle)
 
 
 class Foot(BodyPart):
-    def __init__(self, x=0, y=0, male=True, left=True):
+    def __init__(self, x=0, y=0, alpha=255, angle=0, male=True, left=True):
+        self.male = male
+        self.left = left
         if male:
             image = pygame.image.load('male_footprint.png').convert_alpha()
             box = pygame.image.load('male_footprint_box.png').convert_alpha()
@@ -106,7 +111,15 @@ class Foot(BodyPart):
         image = pygame.transform.scale(image, (100, 200))
         box = pygame.transform.scale(box, (100, 200))
         
-        super().__init__(image, box, x, y)
+        super().__init__(image, box, x, y, alpha, angle)
+
+    def copy(self):
+        return Foot(self.surface_rect.x,
+                    self.surface_rect.y,
+                    self.alpha,
+                    self.angle,
+                    self.male,
+                    self.left)
 
 
 

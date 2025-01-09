@@ -3,8 +3,10 @@ import sys
 import numpy as np
 
 from menus import StepEditWindow
+from global_parameters import ScreenParameters
+
 pygame.init()
-screen = pygame.display.set_mode((1000, 800))
+screen = pygame.display.set_mode((ScreenParameters.width, ScreenParameters.height))
 clock = pygame.time.Clock()
 
 

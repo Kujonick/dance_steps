@@ -2,29 +2,34 @@ import pygame
 import numpy as np
 
 from bodyparts import Foot, Torso, BodyPart
+from global_parameters import ScreenParameters
 
 class Tick():
-    def __init__(self, pointer, both_partners=True):
+    def __init__(self, pointer, both_partners=True, parts=None):
 
         self.active_part: BodyPart= None     # part that is currently moved
         self.last_active: BodyPart= None     # part that was moved last
         self.prev_position = None   # first position when mouse started rotating
         self.prev_angle = None      # angle, from which part started rotating
 
-        # parts inluded in the tick
-        self.parts = [Foot(), 
-                      Foot(100, left=False),
-                      ]
-
-        if both_partners:
-            self.parts.extend([Foot(0, 200, male=False), 
-                               Foot(100, 200, male=False, left=False)])
-            
-        self.parts.append(Torso())
-        self.parts.append(Torso(200))
-        # self.foots = list(filter(lambda x: isinstance(x, Foot), self.parts))
-
         self.pointer = pointer
+
+        if parts is None:
+            # parts inluded in the tick
+            self.parts = [Foot(ScreenParameters.width//2 - 100, ScreenParameters.height//2), 
+                        Foot(ScreenParameters.width//2, ScreenParameters.height//2, left=False),
+                        Torso(ScreenParameters.width//2 - 100, ScreenParameters.height//2 - 100, angle = 270)
+                        ]
+
+            if both_partners:
+                self.parts.extend([Foot(ScreenParameters.width//2, ScreenParameters.height//2 - 200, angle=180, male=False), 
+                                Foot(ScreenParameters.width//2 - 100, ScreenParameters.height//2 - 200, angle=180, male=False, left=False),
+                                Torso(ScreenParameters.width//2 - 100, ScreenParameters.height//2 - 300, angle = 90)])
+            # self.foots = list(filter(lambda x: isinstance(x, Foot), self.parts))
+
+        else:
+            self.parts = parts
+        
 
     def check_for_collision(self, part):
         for foot in self.parts:
@@ -92,7 +97,9 @@ class Tick():
                     if not self.check_for_collision(self.last_active):
                         self.last_active.update_allowed_angle()
 
-
+    def copy(self):
+        new_parts = [part.copy() for part in self.parts]
+        return type(self)(pointer=self.pointer, parts=new_parts)
 
     def draw(self, screen):
         for part in self.parts:
@@ -106,15 +113,13 @@ class StepEditWindow():
         self.pointer = pygame.mask.from_surface(pointer)
 
 
-        self.ticks = [  Tick(self.pointer),
-                        Tick(self.pointer),
-                        Tick(self.pointer)]
+        self.ticks = [Tick(self.pointer)]
         self.active_tick = len(self.ticks) - 1
 
         self.update_history()
 
     def update_history(self):
-        for i in range(min(self.active_tick + 2, len(self.ticks))):
+        for i in range(max(0, self.active_tick - 4), min(self.active_tick + 2, len(self.ticks))):
             self.ticks[i].history_steps(self.active_tick - i)  
 
     def update(self, events):
@@ -126,11 +131,15 @@ class StepEditWindow():
                 if event.key == pygame.K_DOWN:
                     self.active_tick = max(0, self.active_tick - 1)
 
+                if event.key == pygame.K_SPACE:
+                    new_tick = self.ticks[self.active_tick].copy()
+                    self.ticks.insert(self.active_tick+1, new_tick)
+                    self.active_tick += 1
 
             self.update_history()
 
         self.ticks[self.active_tick].update(events)
 
     def draw(self, screen):
-        for tick in self.ticks:
+        for tick in self.ticks[max(0, self.active_tick - 3):self.active_tick+1]:
             tick.draw(screen)
